@@ -1,7 +1,7 @@
 # Vscode
 .history/
-.vscode
-pycache/
+.vscode/
+__pycache__/
 
 
 venv/

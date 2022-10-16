@@ -2,6 +2,7 @@ from ast import Is
 from rest_framework import authentication, generics, mixins, permissions
 
 from api.authentication import TokenAuthentication
+from api.mixins import StaffEditorPermissionMixin
 
 from .models import Product
 from .permissions import IsStaffEditorPermission
@@ -30,22 +31,20 @@ class ProductMixinView(mixins.ListModelMixin,
         return self.create(request, *args, **kwargs)
 
         
-class ProductListCreateAPIView(generics.ListCreateAPIView):
+class ProductListCreateAPIView(StaffEditorPermissionMixin,
+                               generics.ListCreateAPIView
+                               ):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    authentication_classes = [
-        authentication.SessionAuthentication,
-        TokenAuthentication
-    ]
-    permission_classes = [permissions.IsAdminUser, IsStaffEditorPermission]
+    # permission_classes = [permissions.IsAdminUser, IsStaffEditorPermission]
 
     def perform_create(self, serializer):
         # return super().perform_create(serializer)
         title = serializer.validated_data.get('title')
         content = serializer.validated_data.get('content')
-        if content is None:
+        if content is None or content == '':
             content = "New content bro, what you looking at."
-        serializer.save()
+        serializer.save(content=content)
 
 class ProductListAPIView(generics.ListAPIView):
     queryset = Product.objects.all()
